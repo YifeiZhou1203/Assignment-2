@@ -209,12 +209,12 @@ df_rich_t <- df_rich %>%
 # t-test 
 t.test(BIN_richness ~ midlat_bin, data = df_rich_t)
 
-cam <- ggplot(df_rich, aes(x = lat_mid, y = BIN_richness)) +
+gam <- ggplot(df_rich, aes(x = lat_mid, y = BIN_richness)) +
   geom_point() +
   geom_smooth(method = "gam", formula = y ~ s(x), se = TRUE) +
   labs(x = "Latitude", y = "BIN richness")
 
-p_rich_interactive <- ggplotly(cam)
+p_rich_interactive <- ggplotly(gam)
 p_rich_interactive
 
 
