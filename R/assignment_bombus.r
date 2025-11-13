@@ -16,6 +16,10 @@ suppressPackageStartupMessages({
   library(rnaturalearthdata)
 })
 library(iNEXT)
+library(viridis)
+library(plotly)
+library(mgcv)
+library(ggVennDiagram)
 
 # set the seed so that it's reproducible
 set.seed(203)
@@ -194,5 +198,62 @@ write_csv(covg, "outputs/coverage_estimates.csv")
 ####10 - SESSION INFO----
 capture.output(sessionInfo(), file = "outputs/sessionInfo.txt")
 message("\nAll is done! Figures are saved inisde → ./figs, tables are put in → ./outputs.\n")
+
+
+#Edition
+
+# Create database to filter out: inside vs outside 40–60°
+df_rich_t <- df_rich %>%
+  mutate(midlat_bin = ifelse(lat_mid >= 40 & lat_mid <= 60, "40-60", "other"))
+
+# t-test 
+t.test(BIN_richness ~ midlat_bin, data = df_rich_t)
+
+cam <- ggplot(df_rich, aes(x = lat_mid, y = BIN_richness)) +
+  geom_point() +
+  geom_smooth(method = "gam", formula = y ~ s(x), se = TRUE) +
+  labs(x = "Latitude", y = "BIN richness")
+
+p_rich_interactive <- ggplotly(cam)
+p_rich_interactive
+
+
+
+
+#Add a VENN Diagram 
+#from df_clean, filter for both latitude band 30-45 and 45-60, which contain the most richness in the earlier plots. 
+#select only the unique values 
+#each bin dataframe should contain two columns: bin and latitudes
+
+bin_30_45 <- unique(df_clean$bin[df_clean$lat >= 30 & df_clean$lat < 45])
+
+bin_45_60 <- unique(df_clean$bin[df_clean$lat >= 45 & df_clean$lat < 60])
+
+
+#Prepare list of BINs per latitude band from the precious data frame 
+bin_list <- list(
+  `45°N` = bin_30_45,
+  `60°N` = bin_45_60
+)
+
+#Plot Venn diagram using ggVennDiagram package, and adjust the marginal size:
+ggVennDiagram(bin_list,
+              label_color = "white",
+              label_alpha = 0, 
+              category.names = c("45°N", "60°N")) +
+              scale_fill_gradient(low = viridis(1, option = "E"), 
+                                 high = viridis(1, option = "D")) +
+  labs(
+    title = "BIN Overlap Between Latitude Bands",
+    subtitle = "Bombus BINs shared and unique in 30–45°N vs 45–60°N"
+  ) +
+  theme(legend.position = "",
+        plot.title = element_text(size = 16, face = "bold"),
+        plot.margin = unit(c(2, 2, 2,2), "cm"), 
+        plot.subtitle = element_text(size = 14)
+)
+
+
+
 
 
