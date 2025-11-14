@@ -16,10 +16,6 @@ suppressPackageStartupMessages({
   library(rnaturalearthdata)
 })
 library(iNEXT)
-library(viridis)
-library(plotly)
-library(mgcv)
-library(ggVennDiagram)
 
 # set the seed so that it's reproducible
 set.seed(203)
